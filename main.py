@@ -17,33 +17,19 @@ database = os.getenv('DATABASE')
 app.config['SQLALCHEMY_DATABASE_URI'] = f'{connector}://{user}:{password}@{host}/{database}'
 
 db = SQLAlchemy(app)
-class Usuario():
-    def __init__(self, id, nome, username, senha):
-        self.id = id
-        self.nome = nome
-        self.username = username
-        self.senha = senha
+class Usuario(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String(255), unique=True, nullable=False)
+    senha = db.Column(db.String(255), nullable=False)
+    def __repr__(self):
+        return f"<Usuario {self.username}>"
 
-class Jogo():
-    def __init__(self, id, name, price, quantity):
-        self.id = id
-        self.name = name
-        self.quantity = quantity
-        self.price = price
-
-    def totalValue(self):
-        return self.quantity * self.price
-
-usuario1 = Usuario(1, "Rodrigo", "rodrigo@email.com", "123456")
-usuario2 = Usuario(2, "matheus", "matheus@email.com", "123456")
-
-usuarios = [usuario1, usuario2]
-
-jogo1 = Jogo(1, "Skyrim", 150, 2)
-jogo2 = Jogo(2, "Resident evil", 150, 10)
-jogo3 = Jogo(3, "League of legends", 10, 10)
-
-jogos = [jogo1, jogo2, jogo3]
+class Jogo(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
 
 @app.before_request
 def before_request():
