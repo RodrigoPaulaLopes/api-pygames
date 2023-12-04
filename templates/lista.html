@@ -18,7 +18,7 @@
             <td>{{jogo.name}}</td>
             <td>{{jogo.price}}</td>
             <td>{{jogo.quantity}}</td>
-            <td>{{jogo.totalValue()}}</td>
+            <td>{{jogo.price * jogo.quantity}}</td>
         </tr>
         {% endfor %}
         </tbody>
