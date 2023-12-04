@@ -1,36 +1,44 @@
 from flask import Flask, render_template, redirect, request, session
+from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 app = Flask(__name__)
 app.secret_key = "SECRET"
 
-class Usuario():
-    def __init__(self, nome, username, senha):
-        self.nome = nome
-        self.username = username
-        self.senha = senha
-class Jogo():
-    def __init__(self, name, price, quantity):
-        self.name = name
-        self.quantity = quantity
-        self.price = price
+connector = os.getenv('CONNECTOR')
+user = os.getenv('USER')
+password = os.getenv('PASSWORD')
+host = os.getenv('HOST')
+database = os.getenv('DATABASE')
 
-    def totalValue(self):
-        return self.quantity * self.price
+app.config['SQLALCHEMY_DATABASE_URI'] = f'{connector}://{user}:{password}@{host}/{database}'
 
-usuario1 = Usuario("Rodrigo", "rodrigo@email.com", "123456")
-usuario2 = Usuario("matheus", "matheus@email.com", "123456")
+db = SQLAlchemy(app)
 
-usuarios = [usuario1, usuario2]
 
-jogo1 = Jogo("Skyrim", 150, 2)
-jogo2 = Jogo("Resident evil", 150, 10)
-jogo3 = Jogo("League of legends", 10, 10)
+class Usuarios(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String(255), unique=True, nullable=False)
+    senha = db.Column(db.String(255), nullable=False)
 
-jogos = [jogo1, jogo2, jogo3]
+    def __repr__(self):
+        return f"<Usuario {self.username}>"
+
+
+class Jogos(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+
 
 @app.before_request
 def before_request():
     endpoint = request.endpoint
-    print(endpoint)
     rotas_autenticacao = ['login', 'autenticar']
     # Verifique se a rota atual não está nas rotas de autenticação
     if endpoint not in rotas_autenticacao:
@@ -46,7 +54,7 @@ def principal():
 @app.route('/games')
 def findAll():
     title = 'Todos os jogos'
-
+    jogos = Jogos.query.order_by(Jogos.id)
     return render_template('lista.html', title=title, jogos=jogos)
 
 
@@ -58,17 +66,27 @@ def form():
 
 @app.route("/create", methods=['POST', ])
 def create():
-    data = request.form
+    try:
+        data = request.form
 
-    name = str(data.get('name'))
-    price = float(data.get('price'))
-    quantity = int(data.get('quantity'))
+        name = str(data.get('name'))
+        price = float(data.get('price'))
+        quantity = int(data.get('quantity'))
 
-    jogo = Jogo(name, price, quantity)
+        jogo = Jogos.query.filter_by(name=name).first()
 
-    jogos.append(jogo)
+        if jogo:
+            return redirect('games')
 
-    return redirect('games')
+        novo_game = Jogos(name=name, price=price, quantity=quantity)
+        db.session.add(novo_game)
+        db.session.commit()
+
+        return redirect('games')
+    except Exception as e:
+        print(e)
+    finally:
+        pass
 
 
 @app.route("/login")
@@ -79,12 +97,13 @@ def login():
 @app.route("/autenticar", methods=['POST'])
 def autenticar():
     data = request.form
-    for usuario in usuarios:
-        if data.get('email') == usuario.username and data.get('senha') == usuario.senha:
-            session['usuario'] = usuario.nome
-            return redirect("games")
-        else:
-            return redirect("login")
+    usuario = Usuarios.query.filter_by(username=data.get('email')).first()
+    if data.get('email') == usuario.username and data.get('senha') == usuario.senha:
+        session['usuario'] = usuario.nome
+        return redirect("games")
+    else:
+        return redirect("login")
+
 
 @app.route("/logout")
 def logout():
