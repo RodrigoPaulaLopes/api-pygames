@@ -1,0 +1,57 @@
+{% extends "template.html" %}
+{% block conteudo %}
+
+<a href="/games" class="btn btn-primary mb-4">Voltar</a>
+
+<form action="/create" method="POST">
+    <div class="row">
+        <div class="mb-3 col-12">
+            <label for="name" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="name" placeholder="GTA VI" name="name">
+        </div>
+        <div class="mb-3 col-2">
+            <label for="price" class="form-label">Preço</label>
+            <input type="text" class="form-control" id="price" placeholder="0.00" name="price">
+        </div>
+        <div class="mb-3 col-2">
+            <label for="quantity" class="form-label">Quantidade</label>
+            <input type="number" class="form-control" id="quantity" placeholder="2" name="quantity">
+        </div>
+        <div class="mb-3  col-12">
+            <label for="quantity" class="form-label">Valor Total</label>
+            <input id="total" name="total" value="R$ 0" disabled class="form-control"/>
+        </div>
+        <div class="mb-3  col-12">
+            <input type="submit" value="Send" class="btn btn-primary col-12"/>
+        </div>
+    </div>
+</form>
+<script>
+
+    const quantity = document.getElementById("quantity");
+    const price = document.getElementById("price");
+    const total = document.getElementById("total");
+    const name = document.getElementById("name")
+
+    name.addEventListener("input", () => {
+        total.value = name.value
+    })
+    price.addEventListener('input', () => {
+        total.value = `R$ ${price.value * quantity.value}`;
+    });
+
+    quantity.addEventListener('input', () => {
+        total.value = `R$ ${price.value * quantity.value}`;
+    });
+
+
+
+
+
+
+
+
+</script>
+
+{% endblock %}
+</html>

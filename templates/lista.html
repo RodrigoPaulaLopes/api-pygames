@@ -1,0 +1,33 @@
+{% extends "template.html" %}
+{% block conteudo %}
+<a href="/new" class="btn btn-primary mb-4">novo jogo</a>
+{% if jogos %}
+<div class="overflow-x-auto">
+    <table class="table">
+        <thead class="thead-default">
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for jogo in jogos %}
+        <tr>
+            <td>{{jogo.name}}</td>
+            <td>{{jogo.price}}</td>
+            <td>{{jogo.quantity}}</td>
+            <td>{{jogo.totalValue()}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div>
+    <h1>Não temos jogos para mostrar</h1>
+
+</div>
+{% endif %}
+{% endblock %}
